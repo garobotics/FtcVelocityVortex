@@ -51,14 +51,14 @@ public class TankBot extends OpMode {
 	DcMotor motorLeftFront;
 
     // if robot is lopsided, weight adjustment value will compensate
-    // RANGE [0, 0.95] AND ALL POSITIVE
+    // RANGE [0, 1] as a percentage of the total power we want.
     // increase adjustment values for wheels that are on the heavier part of the robot
-    // because we are subtracting weightAdjust from the power
-    float weightAdjustRF = 0;
-    float weightAdjustLR = 0;
+    // because we are scaling weightAdjust according to the power
+    float weightAdjustRF = 1;
+    float weightAdjustLR = 1;
 
-    float weightAdjustRR = (float) 0.4;
-    float weightAdjustLF = (float) 0.4;
+    float weightAdjustRR = (float) 0.9;
+    float weightAdjustLF = (float) 0.9;
 
 
 	@Override
@@ -121,38 +121,38 @@ public class TankBot extends OpMode {
         // the joystick yVal will be positive when going forward
         // in this statement, yVal is negated because the wheels need to go backwards
         if (yVal > Math.abs(xVal)) {
-            motorRightFront.setPower(-yVal + weightAdjustRF);
-            motorRightRear.setPower(-yVal + weightAdjustRR);
-            motorLeftFront.setPower(-yVal + weightAdjustLF);
-            motorLeftRear.setPower(-yVal + weightAdjustLR);
+            motorRightFront.setPower(-yVal * weightAdjustRF);
+            motorRightRear.setPower(-yVal * weightAdjustRR);
+            motorLeftFront.setPower(-yVal * weightAdjustLF);
+            motorLeftRear.setPower(-yVal * weightAdjustLR);
         }
 
         // BACKWARDS: all wheels must go forward
         // the joystick yVal will be negative when going backward
         // in this statement, yVal is negated because the wheels need to go forwards
         if (yVal < Math.abs(xVal) && Math.abs(yVal) > Math.abs(xVal)) {
-            motorRightFront.setPower(-yVal - weightAdjustRF);
-            motorRightRear.setPower(-yVal - weightAdjustRR);
-            motorLeftFront.setPower(-yVal - weightAdjustLF);
-            motorLeftRear.setPower(-yVal - weightAdjustLR);
+            motorRightFront.setPower(-yVal * weightAdjustRF);
+            motorRightRear.setPower(-yVal * weightAdjustRR);
+            motorLeftFront.setPower(-yVal * weightAdjustLF);
+            motorLeftRear.setPower(-yVal * weightAdjustLR);
         }
 
         /* RIGHT: the right front and left rear wheels must go forward
            and the right rear and left front wheels must go backward */
         if (xVal > Math.abs(yVal)) {
-            motorRightFront.setPower(xVal - weightAdjustRF); // 0 < xVal < 1
-            motorRightRear.setPower(-xVal + weightAdjustRR);  // -1 < -xVal < 0
-            motorLeftFront.setPower(-xVal + weightAdjustLF);
-            motorLeftRear.setPower(xVal - weightAdjustLR);
+            motorRightFront.setPower(xVal * weightAdjustRF); // 0 < xVal < 1
+            motorRightRear.setPower(-xVal * weightAdjustRR);  // -1 < -xVal < 0
+            motorLeftFront.setPower(-xVal * weightAdjustLF);
+            motorLeftRear.setPower(xVal * weightAdjustLR);
         }
 
         /* LEFT: the right rear and left front wheels must go forward
            and the right front and left rear wheels must go backward */
         if (xVal < Math.abs(yVal) && Math.abs(xVal) > Math.abs(yVal)){
-            motorRightFront.setPower(xVal + weightAdjustRF);  // -1 < xVal < 0
-            motorRightRear.setPower(-xVal - weightAdjustRR); // 0 < -xVal < 1
-            motorLeftFront.setPower(-xVal - weightAdjustLF);
-            motorLeftRear.setPower(xVal + weightAdjustLR);
+            motorRightFront.setPower(xVal * weightAdjustRF);  // -1 < xVal < 0
+            motorRightRear.setPower(-xVal * weightAdjustRR); // 0 < -xVal < 1
+            motorLeftFront.setPower(-xVal * weightAdjustLF);
+            motorLeftRear.setPower(xVal * weightAdjustLR);
         }
     }
 
