@@ -92,6 +92,7 @@ public class TankBot extends OpMode {
 
         float yVal = gamepad1.left_stick_y; //left joystick controls all wheels
         float xVal = gamepad1.left_stick_x;
+        float xValRight = gamepad1.right_stick_x; // x axis of the right joystick
 
         // negate all values since the y axis is reversed on the joypads and -1 should be 1
         yVal = -(yVal);
@@ -154,6 +155,37 @@ public class TankBot extends OpMode {
             motorLeftFront.setPower(-xVal * weightAdjustLF);
             motorLeftRear.setPower(xVal * weightAdjustLR);
         }
+
+
+        /* SPIN RIGHT: the left front and rear wheels go forward
+           and the right front and rear wheels go backward
+
+        if (xValRight > 0) {
+            // left wheels forward
+            motorLeftFront.setPower(-yVal * weightAdjustLF);
+            motorLeftRear.setPower(-yVal * weightAdjustLR);
+            // right wheels backward
+            motorRightFront.setPower(-yVal * weightAdjustRF);
+            motorRightRear.setPower(-yVal * weightAdjustRR);
+
+        }
+        */
+
+        /* SPIN LEFT: the right front and rear wheels go forward
+           and the left front and rear wheels go backward
+         */
+        /*
+        if (xValRight < 0){
+            // right wheels forward
+            motorRightFront.setPower(-yVal * weightAdjustRF);
+            motorRightRear.setPower(-yVal * weightAdjustRR);
+            // left wheels backward
+            motorLeftFront.setPower(-yVal * weightAdjustLF);
+            motorLeftRear.setPower(-yVal * weightAdjustLR);
+        }
+        */
+
+
     }
 
 	@Override
