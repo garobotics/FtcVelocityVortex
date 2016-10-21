@@ -100,11 +100,13 @@ public class TankBot extends OpMode {
         // clip the right/left values so that the values never exceed +/- 1
         yVal = Range.clip(yVal, -1, 1);
         xVal = Range.clip(xVal, -1, 1);
+        xValRight = Range.clip(xVal, -1, 1);
 
         // scale the joystick value to make it easier to control
         // the robot more precisely at slower speeds.
         yVal = (float) scaleInput(yVal);
         xVal = (float) scaleInput(xVal);
+        xValRight = (float) scaleInput(xValRight);
 
         // set power to 0 if joysticks are at (0,0)
         if (yVal == 0 && xVal == 0) {
@@ -158,37 +160,35 @@ public class TankBot extends OpMode {
 
 
         /* SPIN RIGHT: the left front and rear wheels go forward
-           and the right front and rear wheels go backward
+           and the right front and rear wheels go backward */
 
         if (xValRight > 0) {
             // left wheels forward
-            motorLeftFront.setPower(-yVal * weightAdjustLF);
-            motorLeftRear.setPower(-yVal * weightAdjustLR);
+            motorLeftFront.setPower(-xValRight * weightAdjustLF);
+            motorLeftRear.setPower(-xValRight * weightAdjustLR);
             // right wheels backward
-            motorRightFront.setPower(-yVal * weightAdjustRF);
-            motorRightRear.setPower(-yVal * weightAdjustRR);
+            motorRightFront.setPower(-xValRight * weightAdjustRF);
+            motorRightRear.setPower(-xValRight * weightAdjustRR);
 
         }
-        */
+
 
         /* SPIN LEFT: the right front and rear wheels go forward
-           and the left front and rear wheels go backward
-         */
-        /*
+           and the left front and rear wheels go backward */
+
+
         if (xValRight < 0){
             // right wheels forward
-            motorRightFront.setPower(-yVal * weightAdjustRF);
-            motorRightRear.setPower(-yVal * weightAdjustRR);
+            motorRightFront.setPower(-xValRight * weightAdjustRF);
+            motorRightRear.setPower(-xValRight * weightAdjustRR);
             // left wheels backward
-            motorLeftFront.setPower(-yVal * weightAdjustLF);
-            motorLeftRear.setPower(-yVal * weightAdjustLR);
+            motorLeftFront.setPower(-xValRight * weightAdjustLF);
+            motorLeftRear.setPower(-xValRight * weightAdjustLR);
         }
-        */
-
 
     }
 
-	@Override
+	@Overridem 
 	public void stop() { // stops all motors when op mode is disabled from driver station
         motorRightFront.setPower(0.0);
         motorRightRear.setPower(0.0);
