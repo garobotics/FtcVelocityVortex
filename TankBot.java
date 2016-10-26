@@ -92,7 +92,8 @@ public class TankBot extends OpMode {
 
         float yVal = gamepad1.left_stick_y; //left joystick controls all wheels
         float xVal = gamepad1.left_stick_x;
-        float xValRight = gamepad1.right_stick_x; // x axis of the right joystick
+        float spinner = gamepad1.right_stick_x; // x axis of the right joystick
+        telemetry.addData("spinner @ beginning", spinner);
 
         // negate all values since the y axis is reversed on the joypads and -1 should be 1
         yVal = -(yVal);
@@ -100,13 +101,13 @@ public class TankBot extends OpMode {
         // clip the right/left values so that the values never exceed +/- 1
         yVal = Range.clip(yVal, -1, 1);
         xVal = Range.clip(xVal, -1, 1);
-        xValRight = Range.clip(xVal, -1, 1);
+        spinner = Range.clip(spinner, -1, 1);
 
         // scale the joystick value to make it easier to control
         // the robot more precisely at slower speeds.
         yVal = (float) scaleInput(yVal);
         xVal = (float) scaleInput(xVal);
-        xValRight = (float) scaleInput(xValRight);
+        spinner = (float) scaleInput(spinner);
 
         // set power to 0 if joysticks are at (0,0)
         if (yVal == 0 && xVal == 0) {
@@ -151,7 +152,7 @@ public class TankBot extends OpMode {
 
         /* LEFT: the right rear and left front wheels must go forward
            and the right front and left rear wheels must go backward */
-        if (xVal < Math.abs(yVal) && Math.abs(xVal) > Math.abs(yVal)){
+        if (xVal < Math.abs(yVal) && Math.abs(xVal) > Math.abs(yVal)) {
             motorRightFront.setPower(xVal * weightAdjustRF);  // -1 < xVal < 0
             motorRightRear.setPower(-xVal * weightAdjustRR); // 0 < -xVal < 1
             motorLeftFront.setPower(-xVal * weightAdjustLF);
@@ -159,36 +160,33 @@ public class TankBot extends OpMode {
         }
 
 
-        /* SPIN RIGHT: the left front and rear wheels go forward
-           and the right front and rear wheels go backward */
+        /* SPIN RIGHT: the left wheels go forward
+           and the right wheels go backward */
 
-        if (xValRight > 0) {
+
+         /* SPIN LEFT: the right wheels go forward
+            and the left wheels go backward */
+
+        if (spinner != 0) {
             // left wheels forward
-            motorLeftFront.setPower(-xValRight * weightAdjustLF);
-            motorLeftRear.setPower(-xValRight * weightAdjustLR);
+            motorLeftFront.setPower(-spinner * weightAdjustLF);
+            motorLeftRear.setPower(-spinner * weightAdjustLR);
             // right wheels backward
-            motorRightFront.setPower(-xValRight * weightAdjustRF);
-            motorRightRear.setPower(-xValRight * weightAdjustRR);
-
+            motorRightFront.setPower(spinner * weightAdjustRF);
+            motorRightRear.setPower(spinner * weightAdjustRR);
+            telemetry.addData("inside if", 1);
+        }
+        else {
+            telemetry.addData("inside if", 0);
         }
 
 
-        /* SPIN LEFT: the right front and rear wheels go forward
-           and the left front and rear wheels go backward */
+        telemetry.addData("spinner @ end", spinner);
 
-
-        if (xValRight < 0){
-            // right wheels forward
-            motorRightFront.setPower(-xValRight * weightAdjustRF);
-            motorRightRear.setPower(-xValRight * weightAdjustRR);
-            // left wheels backward
-            motorLeftFront.setPower(-xValRight * weightAdjustLF);
-            motorLeftRear.setPower(-xValRight * weightAdjustLR);
-        }
 
     }
 
-	@Overridem 
+	@Override
 	public void stop() { // stops all motors when op mode is disabled from driver station
         motorRightFront.setPower(0.0);
         motorRightRear.setPower(0.0);
