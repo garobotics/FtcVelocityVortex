@@ -136,26 +136,22 @@ public class vuforiaTest extends LinearOpMode {
          * documentation directory.
          */
 
-        VuforiaTrackables stonesAndChips = this.vuforia.loadTrackablesFromAsset("StonesAndChips");
-        VuforiaTrackable redTarget = stonesAndChips.get(0);
-        redTarget.setName("RedTarget");  // Stones
+        VuforiaTrackables ftcPics = this.vuforia.loadTrackablesFromAsset("FTC_2016-17");
+        VuforiaTrackable redTarget1 = ftcPics.get(1);
+        redTarget1.setName("RedTarget1");  // tools
 
-        VuforiaTrackable blueTarget  = stonesAndChips.get(1);
-        blueTarget.setName("BlueTarget");  // Chips
+        VuforiaTrackable blueTarget1  = ftcPics.get(2);
+        blueTarget1.setName("BlueTarget1");  // legos
+
+        VuforiaTrackable redTarget2 = ftcPics.get(3);
+        redTarget2.setName("RedTarget2");  // gears
+
+        VuforiaTrackable blueTarget2  = ftcPics.get(0);
+        blueTarget2.setName("BlueTarget2");  // wheels
 
         /** For convenience, gather together all the trackable objects in one easily-iterable collection */
         List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
-        allTrackables.addAll(stonesAndChips);
-
-
-
-
-
-
-
-
-
-
+        allTrackables.addAll(ftcPics);
 
 
         /**
@@ -225,6 +221,19 @@ public class vuforiaTest extends LinearOpMode {
          * - Then we rotate it  90 around the field's Z access to face it away from the audience.
          * - Finally, we translate it back along the X axis towards the red audience wall.
          */
+
+
+
+
+
+
+
+
+
+
+
+
+        
         OpenGLMatrix redTargetLocationOnField = OpenGLMatrix
                 /* Then we translate the target off to the RED WALL. Our translation here
                 is a negative translation in X.*/
