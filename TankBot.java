@@ -110,7 +110,7 @@ public class TankBot extends OpMode {
         spinner = (float) scaleInput(spinner);
 
         // set power to 0 if joysticks are at (0,0)
-        if (yVal == 0 && xVal == 0) {
+        if (yVal == 0 && xVal == 0 && spinner == 0) {
             motorRightFront.setPower(0.0);
             motorRightRear.setPower(0.0);
             motorLeftFront.setPower(0.0);
@@ -167,7 +167,7 @@ public class TankBot extends OpMode {
          /* SPIN LEFT: the right wheels go forward
             and the left wheels go backward */
 
-        if (spinner != 0) {
+         if (spinner != 0) {
             // left wheels forward
             motorLeftFront.setPower(-spinner * weightAdjustLF);
             motorLeftRear.setPower(-spinner * weightAdjustLR);
@@ -182,6 +182,8 @@ public class TankBot extends OpMode {
 
 
         telemetry.addData("spinner @ end", spinner);
+
+
 
 
     }
