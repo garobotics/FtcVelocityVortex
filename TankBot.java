@@ -37,28 +37,21 @@ import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
- /*
- TeleOp Mode
- Enables control of the robot via the gamepad
- */
+import org.firstinspires.ftc.teamcode.HardwareClass;
+
+/*
+TeleOp Mode
+Enables control of the robot via the gamepad
+*/
  @TeleOp(name="TankBot", group ="Tank")
 
 
-public class TankBot extends OpMode {
-	DcMotor motorRightRear;
-	DcMotor motorRightFront;
-	DcMotor motorLeftRear;
-	DcMotor motorLeftFront;
+public class TankBot extends HardwareClass {
 
     // if robot is lopsided, weight adjustment value will compensate
     // RANGE [0, 1] as a percentage of the total power we want.
     // increase adjustment values for wheels that are on the heavier part of the robot
     // because we are scaling weightAdjust according to the power
-    float weightAdjustRF = 1;
-    float weightAdjustLR = 1;
-
-    float weightAdjustRR = (float) 0.9;
-    float weightAdjustLF = (float) 0.9;
 
 
 	@Override
@@ -70,11 +63,15 @@ public class TankBot extends OpMode {
         motorLeftFront = hardwareMap.dcMotor.get("lf");
         motorLeftRear = hardwareMap.dcMotor.get("lb");
 
+        ballFlipper = hardwareMap.dcMotor.get("flip");
+
         //set directions of motors when driving
         motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
         motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
         motorRightFront.setDirection(DcMotor.Direction.REVERSE);
         motorRightRear.setDirection(DcMotor.Direction.REVERSE);
+
+        ballFlipper.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
 
@@ -94,6 +91,7 @@ public class TankBot extends OpMode {
         float xVal = gamepad1.left_stick_x;
         float spinner = gamepad1.right_stick_x; // x axis of the right joystick
         telemetry.addData("spinner @ beginning", spinner);
+        boolean flip = gamepad1.a;
 
         // negate all values since the y axis is reversed on the joypads and -1 should be 1
         yVal = -(yVal);
@@ -108,6 +106,24 @@ public class TankBot extends OpMode {
         yVal = (float) scaleInput(yVal);
         xVal = (float) scaleInput(xVal);
         spinner = (float) scaleInput(spinner);
+
+        // 280 pulses = 1 revolution
+        // if the a button is pressed
+        if (flip) {
+            // have the motor run for 1 rotation
+            ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            ballFlipper.setTargetPosition(560);
+            ballFlipper.setPower(1.0);
+        }
+
+        // if motor is at or goes past the target position
+        if (ballFlipper.getCurrentPosition() >= 560) {
+            // stop the motor
+            ballFlipper.setPower(0.0);
+        }
+
+
 
         // set power to 0 if joysticks are at (0,0)
         if (yVal == 0 && xVal == 0 && spinner == 0) {
