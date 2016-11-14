@@ -31,6 +31,7 @@ import java.util.List;
  */
 
 enum State {INITIALIZE,
+    LAUNCH_BALL,
     MOVE_TO_BEACON,
     TURN_TO_BEACON,
     LINE_FOLLOW,
@@ -46,7 +47,7 @@ enum State {INITIALIZE,
 @Autonomous(name="2 old State Machine", group ="2 old State Machines")
 
 
-public class oldStateMachine extends OpMode {
+public class oldStateMachine extends HardwareClass {
 
     DcMotor motorRightRear;
     DcMotor motorRightFront;
@@ -262,6 +263,7 @@ public class oldStateMachine extends OpMode {
                     motorLeftFront.setTargetPosition(-10000);
                     motorRightRear.setTargetPosition(-10000);
                     motorLeftRear.setTargetPosition(-10000);
+
                     motorRightFront.setPower(-1);
                     motorLeftFront.setPower(-1);
                     motorRightRear.setPower(-1);
@@ -276,8 +278,38 @@ public class oldStateMachine extends OpMode {
 
                 break;
 
+            /* LAUNCH_BALL state was added by Anisha on 11/14/2016
+             idk if this even makes sense but i tried to incorporate the ball flipper into the autonomous */
+
+            case LAUNCH_BALL:
+                if ((motorRightFront.getCurrentPosition() < -10000) || (motorLeftFront.getCurrentPosition() < -10000)) {
+                    motorRightFront.setPower(0.0);
+                    motorLeftFront.setPower(0.0);
+                    motorRightRear.setPower(0.0);
+                    motorLeftRear.setPower(0.0);
+                    changeState(State.MOVE_TO_BEACON);
+                }
+                else {
+                    telemetry.addData("0", String.format("State: LAUNCH_BALL"));
+                    ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    ballFlipper.setTargetPosition(560);
+                    ballFlipper.setPower(1.0);
+                }
 
             case MOVE_TO_BEACON:
+                if (ballFlipper.getCurrentPosition() >= 560) {
+                    motorRightFront.setPower(0.0);
+                    motorLeftFront.setPower(0.0);
+                    motorRightRear.setPower(0.0);
+                    motorLeftRear.setPower(0.0);
+                    changeState(State.STOP);
+                }
+                else {
+                    telemetry.addData("0", String.format("State: MOVE_TO_BEACON"));
+                }
+
+            /*case MOVE_TO_BEACON:
                 if ((motorRightFront.getCurrentPosition() < -10000) || (motorLeftFront.getCurrentPosition() < -10000)) {
                     motorRightFront.setPower(0.0);
                     motorLeftFront.setPower(0.0);
@@ -293,7 +325,7 @@ public class oldStateMachine extends OpMode {
                     //                    motorLeftFront.setPower(-1);
                     //                    motorRightRear.setPower(-1);
                     //                    motorLeftRear.setPower(-1);
-                }
+                } */
 
 
 
