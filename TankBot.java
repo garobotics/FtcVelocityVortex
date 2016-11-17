@@ -64,6 +64,7 @@ public class TankBot extends HardwareClass {
         motorLeftRear = hardwareMap.dcMotor.get("lb");
 
         ballFlipper = hardwareMap.dcMotor.get("flip");
+        sweeper = hardwareMap.dcMotor.get("sweep");
 
         //set directions of motors when driving
         motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
@@ -107,7 +108,6 @@ public class TankBot extends HardwareClass {
         xVal = (float) scaleInput(xVal);
         spinner = (float) scaleInput(spinner);
 
-        // 280 pulses = 1 revolution
         // if the a button is pressed
         if (flip) {
             // have the motor run for 1 rotation

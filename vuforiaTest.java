@@ -34,8 +34,6 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.ftcrobotcontroller.R;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -99,6 +97,8 @@ public class vuforiaTest extends HardwareClass {
     public double robotX;
     public double robotY;
     public double robotBearing;
+
+    public List<VuforiaTrackable> allTrackables;
 
     public void init() {
         motorRightFront = hardwareMap.dcMotor.get("rf");
@@ -178,7 +178,7 @@ public class vuforiaTest extends HardwareClass {
             blueTarget2.setName("BlueTarget2");  // wheels
 
             /** For convenience, gather together all the trackable objects in one easily-iterable collection */
-            public List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+            allTrackables = new ArrayList<VuforiaTrackable>();
             allTrackables.addAll(ftcPics);
 
 
@@ -393,7 +393,7 @@ public class vuforiaTest extends HardwareClass {
         // start of the loop
 
         @Override
-        public void loop() throws InterruptedException {
+        public void loop() {
 
             for (VuforiaTrackable trackable : allTrackables) {
                 /**
@@ -420,20 +420,23 @@ public class vuforiaTest extends HardwareClass {
              */
             if (lastLocation != null) {
                 //  RobotLog.vv(TAG, "robot=%s", format(lastLocation));
-                telemetry.addData("Pos", format(lastLocation));
+                telemetry.addData("Pos", lastLocation.formatAsTransform());
             } else {
                 telemetry.addData("Pos", "Unknown");
             }
             telemetry.update();
-            idle();
 
-            if () {
-                //here
-            }
+            /* if (robotX < -1803.4 && robotY < 901.7) { // robot ends up on top of beacon
+                motorRightFront.setPower(1);
+                motorRightRear.setPower(1);
+                motorLeftFront.setPower(1);
+                motorLeftRear.setPower(1);
 
-            }
+            } */
+
         }
-    }
+
+
 
 
     /**
@@ -443,4 +446,5 @@ public class vuforiaTest extends HardwareClass {
     String format(OpenGLMatrix transformationMatrix) {
         return transformationMatrix.formatAsTransform();
     }
+
 }

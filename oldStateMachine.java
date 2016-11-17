@@ -76,6 +76,7 @@ public class oldStateMachine extends HardwareClass {
 
         motorLeftFront = hardwareMap.dcMotor.get("lf");
         motorLeftRear = hardwareMap.dcMotor.get("lb");
+        ballFlipper = hardwareMap.dcMotor.get("flip");
 
         motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
         motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
@@ -85,10 +86,9 @@ public class oldStateMachine extends HardwareClass {
         // assigns state variable to enum INITIALIZE
         state = State.INITIALIZE;
 
-        // reset encoder target position to 0
-        //      motorRightFront.setTargetPosition(0);
-        //      motorLeftFront.setTargetPosition(0);
+        // reset encoder target positions to 0 on drive wheels and ball flipper
         resetDriveEncoders();
+        ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // set drive power to 0
         motorRightFront.setPower(0);
@@ -197,8 +197,7 @@ public class oldStateMachine extends HardwareClass {
 
 
         //Wait for the game to begin
-        telemetry.addData(">", "Press Play to start tracking");
-        telemetry.update();
+    //    telemetry.addData(">", "Press Play to start tracking");
 
         //Start tracking the data sets we care about.
         ftcPics.activate();
@@ -216,13 +215,13 @@ public class oldStateMachine extends HardwareClass {
 
     @Override
     public void loop() {
-        telemetry.addData("1", String.format("Left Front: %5d  Right Front: %5d ",
-                motorRightFront.getCurrentPosition(),
-                motorLeftFront.getCurrentPosition()));
+    //    telemetry.addData("1", String.format("Left Front: %5d  Right Front: %5d ",
+    //            motorRightFront.getCurrentPosition()
+     //           motorLeftFront.getCurrentPosition()));
 
         for (VuforiaTrackable trackable : allTrackables) {
 
-            telemetry.addData(trackable.getName(), ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() ? "Visible" : "Not Visible");    //
+    //        telemetry.addData(trackable.getName(), ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() ? "Visible" : "Not Visible");    //
 
 
             OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
@@ -241,11 +240,11 @@ public class oldStateMachine extends HardwareClass {
 
         if (lastLocation != null) {
             //  RobotLog.vv(TAG, "robot=%s", format(lastLocation));
-            telemetry.addData("Pos", lastLocation.formatAsTransform());
+ //           telemetry.addData("Pos", lastLocation.formatAsTransform());
         } else {
-            telemetry.addData("Pos", "Unknown");
+ //           telemetry.addData("Pos", "Unknown");
         }
-        telemetry.update();
+        telemetry.clearAll();
 
         switch(state) {
             case INITIALIZE:
@@ -256,19 +255,13 @@ public class oldStateMachine extends HardwareClass {
                 // motorRightRear.waitOneFullHardwareCycle();
                 // motorLeftRear.waitOneFullHardwareCycle();
 
-                // if both encoders are close to 0, start moving and change state to MOVE_TO_BEACON
+                // if both encoders are close to 0, start moving and change state to next state
                 if ((Math.abs(motorRightFront.getCurrentPosition()) < 5) && (Math.abs(motorLeftFront.getCurrentPosition()) < 5)) {
-                    setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorRightFront.setTargetPosition(-10000);
-                    motorLeftFront.setTargetPosition(-10000);
-                    motorRightRear.setTargetPosition(-10000);
-                    motorLeftRear.setTargetPosition(-10000);
 
-                    motorRightFront.setPower(-1);
-                    motorLeftFront.setPower(-1);
-                    motorRightRear.setPower(-1);
-                    motorLeftRear.setPower(-1);
-                    changeState(State.MOVE_TO_BEACON);
+                    ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    ballFlipper.setTargetPosition(1120);
+                    ballFlipper.setPower(1.0);
+                    changeState(State.LAUNCH_BALL);
                 }
                 else {
                     // continue printing telemetry data to the phone (in main loop)
@@ -276,38 +269,38 @@ public class oldStateMachine extends HardwareClass {
 
                 }
 
-                break;
-
-            /* LAUNCH_BALL state was added by Anisha on 11/14/2016
-             idk if this even makes sense but i tried to incorporate the ball flipper into the autonomous */
 
             case LAUNCH_BALL:
-                if ((motorRightFront.getCurrentPosition() < -10000) || (motorLeftFront.getCurrentPosition() < -10000)) {
-                    motorRightFront.setPower(0.0);
-                    motorLeftFront.setPower(0.0);
-                    motorRightRear.setPower(0.0);
-                    motorLeftRear.setPower(0.0);
-                    changeState(State.MOVE_TO_BEACON);
-                }
+                // if ball flipper is done, start moving and change state to next state
+                if (ballFlipper.getCurrentPosition() >= 1120) {
+                            ballFlipper.setPower(0);
+                            motorRightFront.setTargetPosition(-10000);
+                            motorLeftFront.setTargetPosition(-10000);
+                            motorLeftFront.setPower(-1);
+                            motorLeftRear.setPower(-1);
+                            motorRightFront.setPower(-1);
+                            motorRightRear.setPower(-1);
+
+                            changeState(State.MOVE_TO_BEACON);
+                        }
                 else {
                     telemetry.addData("0", String.format("State: LAUNCH_BALL"));
-                    ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    ballFlipper.setTargetPosition(560);
-                    ballFlipper.setPower(1.0);
                 }
 
             case MOVE_TO_BEACON:
-                if (ballFlipper.getCurrentPosition() >= 560) {
-                    motorRightFront.setPower(0.0);
+                if ((motorRightFront.getCurrentPosition() < -10000) || (motorLeftFront.getCurrentPosition() < -10000)) {
+       /*             motorRightFront.setPower(0.0);
                     motorLeftFront.setPower(0.0);
                     motorRightRear.setPower(0.0);
-                    motorLeftRear.setPower(0.0);
-                    changeState(State.STOP);
+                    motorLeftRear.setPower(0.0);*/
+        //            changeState(State.STOP);
                 }
                 else {
                     telemetry.addData("0", String.format("State: MOVE_TO_BEACON"));
+                    telemetry.addData("1", "still here");
                 }
+                motorLeftFront.setPower(-1);
+
 
             /*case MOVE_TO_BEACON:
                 if ((motorRightFront.getCurrentPosition() < -10000) || (motorLeftFront.getCurrentPosition() < -10000)) {
@@ -331,7 +324,7 @@ public class oldStateMachine extends HardwareClass {
 
             case STOP:
                 telemetry.addData("0", String.format("State: STOP"));
-                break;
+ //               break;
         }
     }
 
