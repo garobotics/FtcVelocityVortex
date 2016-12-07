@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
@@ -45,6 +46,8 @@ enum State3 {INITIALIZE,
 // possible values for state because it is an enum type
 
 @Autonomous(name="State Machine 3")
+@Disabled
+
 
 public class stateMachine3 extends HardwareClass {
 
@@ -137,8 +140,8 @@ public class stateMachine3 extends HardwareClass {
                     motorRightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     motorLeftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     motorRightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    motorRightFront.setTargetPosition(10000);
-                    motorLeftFront.setTargetPosition(10000);
+                    motorRightFront.setTargetPosition(5000);
+                    motorLeftFront.setTargetPosition(5000);
                     motorLeftFront.setPower(1);
                     motorLeftRear.setPower(1);
                     motorRightFront.setPower(1);
@@ -152,7 +155,7 @@ public class stateMachine3 extends HardwareClass {
 
             case MOVE_TO_BEACON:
                 telemetry.addData("0", "The eagle has flown.");
-                if ((motorRightFront.getCurrentPosition() > 10000) || (motorLeftFront.getCurrentPosition() > 10000)) {
+                if ((motorRightFront.getCurrentPosition() > 5000) || (motorLeftFront.getCurrentPosition() > 5000)) {
                     motorRightFront.setPower(0.0);
                     motorLeftFront.setPower(0.0);
                     motorRightRear.setPower(0.0);

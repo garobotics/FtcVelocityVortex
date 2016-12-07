@@ -34,6 +34,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.ftcrobotcontroller.R;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -87,6 +88,7 @@ import java.util.List;
  */
 
 @Autonomous(name="vuforiaTest", group ="Concept")
+@Disabled
 
 public class vuforiaTest extends HardwareClass {
 

@@ -29,6 +29,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -39,11 +40,13 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareClass;
 
+import static java.lang.Thread.sleep;
+
 /*
 TeleOp Mode
 Enables control of the robot via the gamepad
 */
- @TeleOp(name="TankBot", group ="Tank")
+@TeleOp(name="TankBot", group ="Tank")
 
 
 public class TankBot extends HardwareClass {
@@ -66,6 +69,8 @@ public class TankBot extends HardwareClass {
         ballFlipper = hardwareMap.dcMotor.get("flip");
         sweeper = hardwareMap.dcMotor.get("sweep");
 
+        buttonPusher = hardwareMap.servo.get("button") ;
+
         //set directions of motors when driving
         motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
         motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
@@ -73,8 +78,11 @@ public class TankBot extends HardwareClass {
         motorRightRear.setDirection(DcMotor.Direction.REVERSE);
 
         ballFlipper.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        // buttonPusher add something here maybe
     }
 
+long timer = 0;
 
 	@Override
 	public void loop() {
@@ -91,8 +99,10 @@ public class TankBot extends HardwareClass {
         float yVal = gamepad1.left_stick_y; //left joystick controls all wheels
         float xVal = gamepad1.left_stick_x;
         float spinner = gamepad1.right_stick_x; // x axis of the right joystick
-        telemetry.addData("spinner @ beginning", spinner);
-        boolean flip = gamepad1.a;
+        boolean flip = gamepad2.a;
+        //boolean button = gamepad2.b;
+        boolean collectorUp = gamepad2.dpad_up;
+        boolean collectorDown = gamepad2.dpad_down;
 
         // negate all values since the y axis is reversed on the joypads and -1 should be 1
         yVal = -(yVal);
@@ -117,6 +127,36 @@ public class TankBot extends HardwareClass {
             ballFlipper.setPower(1.0);
         }
 
+        telemetry.addData("counter", timer);
+      /*  if (button && timer>75) { // if button is pushed
+            if (buttonPusher.getPosition() >= 0.25) { // if servo position is greater than 0
+                // bring the button pusher back in
+                buttonPusher.setPosition(0.0);
+                timer = 0;
+            } else { // if servo position is 0
+                // deploy the button pusher
+                buttonPusher.setPosition(0.5);
+                timer = 0;
+            }
+
+        }
+        timer = timer+1;
+*/
+
+        if (collectorUp) {
+            sweeper.setPower(1);
+        }
+
+
+        else if (collectorDown) {
+            sweeper.setPower(-1);
+        }
+
+        else {
+            sweeper.setPower(0);
+        }
+
+
         // if motor is at or goes past the target position
         if (ballFlipper.getCurrentPosition() >= 560) {
             // stop the motor
@@ -137,24 +177,24 @@ public class TankBot extends HardwareClass {
         // adjust x and y values according to the robot's weight distribution using weightAdjust
 
 
-        // FORWARDS: all wheels must go backward
+        // BACKWARDS: all wheels must go forward
         // the joystick yVal will be positive when going forward
         // in this statement, yVal is negated because the wheels need to go backwards
         if (yVal > Math.abs(xVal)) {
-            motorRightFront.setPower(-yVal * weightAdjustRF);
-            motorRightRear.setPower(-yVal * weightAdjustRR);
-            motorLeftFront.setPower(-yVal * weightAdjustLF);
-            motorLeftRear.setPower(-yVal * weightAdjustLR);
+            motorRightFront.setPower(yVal * weightAdjustRF);
+            motorRightRear.setPower(yVal * weightAdjustRR);
+            motorLeftFront.setPower(yVal * weightAdjustLF);
+            motorLeftRear.setPower(yVal * weightAdjustLR);
         }
 
-        // BACKWARDS: all wheels must go forward
+        // FORWARDS: all wheels must go backward
         // the joystick yVal will be negative when going backward
         // in this statement, yVal is negated because the wheels need to go forwards
         if (yVal < Math.abs(xVal) && Math.abs(yVal) > Math.abs(xVal)) {
-            motorRightFront.setPower(-yVal * weightAdjustRF);
-            motorRightRear.setPower(-yVal * weightAdjustRR);
-            motorLeftFront.setPower(-yVal * weightAdjustLF);
-            motorLeftRear.setPower(-yVal * weightAdjustLR);
+            motorRightFront.setPower(yVal * weightAdjustRF * 0.5);
+            motorRightRear.setPower(yVal * weightAdjustRR * 0.5);
+            motorLeftFront.setPower(yVal * weightAdjustLF * 0.5);
+            motorLeftRear.setPower(yVal * weightAdjustLR * 0.5);
         }
 
         /* RIGHT: the right front and left rear wheels must go forward
@@ -190,14 +230,11 @@ public class TankBot extends HardwareClass {
             // right wheels backward
             motorRightFront.setPower(spinner * weightAdjustRF);
             motorRightRear.setPower(spinner * weightAdjustRR);
-            telemetry.addData("inside if", 1);
         }
         else {
-            telemetry.addData("inside if", 0);
         }
 
 
-        telemetry.addData("spinner @ end", spinner);
 
 
 

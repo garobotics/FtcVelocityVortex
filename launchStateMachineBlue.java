@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
@@ -31,32 +30,30 @@ import java.util.List;
  * Created by ga on 3/7/16.
  */
 
- enum State {INITIALIZE,
-            MOVE_TO_BEACON,
-            TURN_TO_BEACON,
-            GET_TO_BEACON,
-            //LINE_FOLLOW,
-            //SQUARE_UP,
-            DETECT_COLOR,
-            PUSH_BUTTON,
-            DRIVE_TO_PLATFORM,
-            PARK_ON_PLATFORM,
-            STOP
-            }
+enum launchState {INITIALIZE,
+    LAUNCH_BALL,
+    MOVE_TO_BEACON,
+    TURN_TO_BEACON,
+    DRIVE_TO_RAMP,
+    LINE_FOLLOW,
+    SQUARE_UP,
+    DETECT_COLOR,
+    PUSH_BUTTON,
+    DRIVE_TO_PLATFORM,
+    PARK_ON_PLATFORM,
+    STOP
+}
 // possible values for state because it is an enum type
 
-@Autonomous(name="State Machine", group ="State Machines")
-@Disabled
+@Autonomous(name="ball launch State Machine BLUE")
 
 
+public class launchStateMachineBlue extends HardwareClass {
 
-public class StateMachine extends HardwareClass {
-
-    // declare common global variables
-
-     State state;    // declares variable state of type State
+    launchState state;    // declares variable state of type State
 
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
+
 
     public static final String TAG = "Vuforia Sample";
 
@@ -68,29 +65,27 @@ public class StateMachine extends HardwareClass {
 
     public List<VuforiaTrackable> allTrackables;
 
-
-
     @Override
-     public void init() {
+    public void init() {
 
-         motorRightFront = hardwareMap.dcMotor.get("rf");
-         motorRightRear = hardwareMap.dcMotor.get("rb");
+        motorRightFront = hardwareMap.dcMotor.get("rf");
+        motorRightRear = hardwareMap.dcMotor.get("rb");
 
-         motorLeftFront = hardwareMap.dcMotor.get("lf");
-         motorLeftRear = hardwareMap.dcMotor.get("lb");
+        motorLeftFront = hardwareMap.dcMotor.get("lf");
+        motorLeftRear = hardwareMap.dcMotor.get("lb");
+        ballFlipper = hardwareMap.dcMotor.get("flip");
 
-         motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
-         motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
-         motorRightFront.setDirection(DcMotor.Direction.REVERSE);
-         motorRightRear.setDirection(DcMotor.Direction.REVERSE);
+        motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
+        motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
+        motorRightFront.setDirection(DcMotor.Direction.REVERSE);
+        motorRightRear.setDirection(DcMotor.Direction.REVERSE);
 
         // assigns state variable to enum INITIALIZE
-        state = State.INITIALIZE;
+        state = launchState.INITIALIZE;
 
-        // reset encoder target position to 0
-  //      motorRightFront.setTargetPosition(0);
-  //      motorLeftFront.setTargetPosition(0);
+        // reset encoder target positions to 0 on drive wheels and ball flipper
         resetDriveEncoders();
+        ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // set drive power to 0
         motorRightFront.setPower(0);
@@ -101,7 +96,6 @@ public class StateMachine extends HardwareClass {
         telemetry.addData("1", String.format("Left Front: %5d  Right Front: %5d ",
                 motorRightFront.getCurrentPosition(),
                 motorLeftFront.getCurrentPosition()));
-/*
 
         VuforiaLocalizer vuforia;
 
@@ -137,7 +131,7 @@ public class StateMachine extends HardwareClass {
         // red target 1
         OpenGLMatrix redTarget1LocationOnField = OpenGLMatrix
                 // Then we translate the target off to the RED WALL. Our translation here
-                is a negative translation in X.
+                //is a negative translation in X.
                 .translation((float) -1803.4, (float) 901.7, 150)
                 .multiplied(Orientation.getRotationMatrix(
                         // First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z
@@ -150,7 +144,7 @@ public class StateMachine extends HardwareClass {
         // red target 2
         OpenGLMatrix redTarget2LocationOnField = OpenGLMatrix
                 // Then we translate the target off to the RED WALL. Our translation here
-                is a negative translation in X.
+                //is a negative translation in X.
                 .translation((float) -1803.4, (float) -300.567, 150)
                 .multiplied(Orientation.getRotationMatrix(
                         // First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z
@@ -162,7 +156,7 @@ public class StateMachine extends HardwareClass {
         // blue target 1
         OpenGLMatrix blueTarget1LocationOnField = OpenGLMatrix
                 // Then we translate the target off to the RED WALL. Our translation here
-                is a negative translation in X.
+                //is a negative translation in X.
                 .translation((float) -901.7, (float) 1803.4, 150)
                 .multiplied(Orientation.getRotationMatrix(
                         // First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z
@@ -174,7 +168,7 @@ public class StateMachine extends HardwareClass {
         // blue target 2
         OpenGLMatrix blueTarget2LocationOnField = OpenGLMatrix
                 // Then we translate the target off to the RED WALL. Our translation here
-                is a negative translation in X.
+                //is a negative translation in X.
                 .translation((float) 300.567, (float) 1803.4, 150)
                 .multiplied(Orientation.getRotationMatrix(
                         // First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z
@@ -200,33 +194,34 @@ public class StateMachine extends HardwareClass {
 
 
         //Wait for the game to begin
-        telemetry.addData(">", "Press Play to start tracking");
-        telemetry.update();
+        //    telemetry.addData(">", "Press Play to start tracking");
 
         //Start tracking the data sets we care about.
         ftcPics.activate();
-*/
-     }
 
-    private void changeState(State newState)
+    }
+
+    private void changeState(launchState newState)
     {
         // Reset the state time, and then change to next state.
         mStateTime.reset();
         state = newState;
     }
 
+    //  public void start() {}
+
+    // count number of loops
+    int count = 0;
+
     @Override
     public void loop() {
-         telemetry.addData("1", String.format("Left Front: %5d  Right Front: %5d ",
-                 motorRightFront.getCurrentPosition(),
-                 motorLeftFront.getCurrentPosition()));
+        OpenGLMatrix robotLocationTransform = null;
 
-        /*for (VuforiaTrackable trackable : allTrackables) {
+        for (VuforiaTrackable trackable : allTrackables) {
 
-            telemetry.addData(trackable.getName(), ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() ? "Visible" : "Not Visible");    //
+            //        telemetry.addData(trackable.getName(), ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() ? "Visible" : "Not Visible");    //
 
-
-            OpenGLMatrix robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
+            robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
             if (robotLocationTransform != null) {
                 lastLocation = robotLocationTransform;
                 VectorF trans = lastLocation.getTranslation();
@@ -238,101 +233,67 @@ public class StateMachine extends HardwareClass {
             }
         }
 
-         //Provide feedback as to where the robot was last located (if we know).
+        //Provide feedback as to where the robot was last located (if we know).
 
         if (lastLocation != null) {
-            //  RobotLog.vv(TAG, "robot=%s", format(lastLocation));
-            telemetry.addData("Pos", lastLocation.formatAsTransform());
+            //             RobotLog.vv(TAG, "robot=%s", format(lastLocation));
+            //             telemetry.addData("Pos", lastLocation.formatAsTransform());
         } else {
-            telemetry.addData("Pos", "Unknown");
+            //           telemetry.addData("Pos", "Unknown");
         }
-        telemetry.update();
-
-        */
-
-         switch(state) {
-             case INITIALIZE:
-
-                 // wait 1 hardware cycle
-                 // motorRightFront.waitOneFullHardwareCycle();
-                 // motorLeftFront.waitOneFullHardwareCycle();
-                 // motorRightRear.waitOneFullHardwareCycle();
-                 // motorLeftRear.waitOneFullHardwareCycle();
-
-                 // if both encoders are close to 0, start moving and change state to MOVE_TO_BEACON
-                 if ((Math.abs(motorRightFront.getCurrentPosition()) < 5) && (Math.abs(motorLeftFront.getCurrentPosition()) < 5)) {
-                     setDriveMode(DcMotor.RunMode.RUN_TO_POSITION);
-                     motorRightFront.setTargetPosition(-10000);
-                     motorLeftFront.setTargetPosition(-10000);
-                     motorRightRear.setTargetPosition(-10000);
-                     motorLeftRear.setTargetPosition(-10000);
-                     motorRightFront.setPower(-1);
-                     motorLeftFront.setPower(-1);
-                     motorRightRear.setPower(-1);
-                     motorLeftRear.setPower(-1);
-                     changeState(State.MOVE_TO_BEACON);
-                 }
-                 else {
-                     // continue printing telemetry data to the phone (in main loop)
-                     telemetry.addData("0", String.format("State: INITIALIZE"));
-
-                 }
-
-                 break;
-
-
-             case MOVE_TO_BEACON:
-                 if ((motorRightFront.getCurrentPosition() < -10000) || (motorLeftFront.getCurrentPosition() < -10000)) {
-
-                         // spin left
-                         motorLeftFront.setPower(-1 * weightAdjustLF);
-                         motorLeftRear.setPower(-1 * weightAdjustLR);
-
-                         motorRightFront.setPower(1 * weightAdjustRF);
-                         motorRightRear.setPower(1 * weightAdjustRR);
-
-                         //changeState(State.STOP);
-                 }
-                 else {
-                     // continue printing telemetry data to the phone (in main loop)
-                     telemetry.addData("0", String.format("State: MOVE_TO_BEACON"));
-
-                 }
-
-
-             case TURN_TO_BEACON:
-                 if (lastLocation != null) { // if the robot can see a target
-                     motorRightFront.setPower(0.0);
-                     motorLeftFront.setPower(0.0);
-                     motorRightRear.setPower(0.0);
-                     motorLeftRear.setPower(0.0);
-               //      changeState(State.GET_TO_BEACON);
-
-                 }
-                 else {
-                     telemetry.addData("0", String.format("State: TURN_TO_BEACON"));
-                 }
-
-          /*   case GET_TO_BEACON:
-                 if (true) {
-                     // code to implement if
-                   //  changeState(State.STOP);
-                 }
-                 else{
-                     telemetry.addData("0", String.format("State: GET_TO_BEACON"));
-                 }
-*/
+        telemetry.clearAll();
+        telemetry.addData("1", String.format("Left Front: %5d  Right Front: %5d ",
+                motorRightFront.getCurrentPosition(),
+                motorLeftFront.getCurrentPosition()));
 
 
 
-             case STOP:
-                 telemetry.addData("0", String.format("State: STOP"));
-                 motorRightFront.setPower(0);
-                 motorRightRear.setPower(0);
-                 motorLeftFront.setPower(0);
-                 motorLeftRear.setPower(0);
-                 break;
-         }
+        switch(state) {
+            case INITIALIZE:
+
+
+
+
+                // wait 1 hardware cycle
+                // motorRightFront.waitOneFullHardwareCycle();
+                // motorLeftFront.waitOneFullHardwareCycle();
+                // motorRightRear.waitOneFullHardwareCycle();
+                // motorLeftRear.waitOneFullHardwareCycle();
+
+                // if both encoders are close to 0, start moving and change state to next state
+                if (count >= 1000) {
+
+                    ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    ballFlipper.setTargetPosition(1120);
+                    ballFlipper.setPower(1.0);
+                    changeState(launchState.LAUNCH_BALL);
+                }
+                else {
+                    // continue printing telemetry data to the phone (in main loop)
+                    count++;
+                    telemetry.addData("0", String.format("State: INITIALIZE"));
+                }
+
+
+            case LAUNCH_BALL:
+                // if ball flipper is done, start moving and change state to next state
+                if (ballFlipper.getCurrentPosition() >= 1120) {
+                    ballFlipper.setPower(0);
+                    motorRightFront.setPower(0.0);
+                    motorLeftFront.setPower(0.0);
+                    motorRightRear.setPower(0.0);
+                    motorLeftRear.setPower(0.0);
+                    changeState(launchState.STOP);
+                }
+                else {
+                    telemetry.addData("0", String.format("State: LAUNCH_BALL"));
+                }
+
+
+            case STOP:
+                telemetry.addData("0", String.format("State: STOP"));
+                break;
+        }
     }
 
     // set up path segments to get to beacons
@@ -345,7 +306,7 @@ public class StateMachine extends HardwareClass {
     //--------------------------------------------------------------------------
     public void resetDriveEncoders()
     {
-     //need this?   setEncoderTarget(0, 0);
+        //need this?   setEncoderTarget(0, 0);
         setDriveMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
