@@ -303,7 +303,7 @@ public class oldStateMachine extends HardwareClass {
             case MOVE_TO_BEACON:
 
                 if ((motorRightFront.getCurrentPosition() <= -1300) || (motorLeftFront.getCurrentPosition() <= -1300)) {
-                    telemetry.addData("0", "The eagle has flown.");
+ //                   telemetry.addData("0", "The eagle has flown.");
                     motorRightFront.setPower(0);
                     motorRightRear.setPower(0);
                     motorLeftRear.setPower(0);
@@ -313,22 +313,23 @@ public class oldStateMachine extends HardwareClass {
   //                  motorRightRear.setPower(-0.25);
   //                  motorLeftRear.setPower(0.25);
   //                  changeState(State.TURN_TO_BEACON);
-                    motorLeftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    motorRightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    motorLeftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    motorRightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     motorLeftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     motorRightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    motorRightFront.setTargetPosition(1500);
-                    motorLeftFront.setTargetPosition(1500);
-                    motorRightFront.setPower(.5);
-                    motorLeftFront.setPower(.5);
-                    motorRightRear.setPower(.5);
-                    motorLeftRear.setPower(.5);
-                    changeState(State.DRIVE_TO_RAMP);
+  //                  motorRightFront.setTargetPosition(1500);
+  //                  motorLeftFront.setTargetPosition(1500);
+                    //start turning left
+                    motorRightFront.setPower(-0.25);
+                    motorLeftFront.setPower(0.25);
+                    motorRightRear.setPower(-0.25);
+                    motorLeftRear.setPower(0.25);
+                    changeState(State.TURN_TO_BEACON);
                 }
                 else {
                     telemetry.addData("0", String.format("State: MOVE_TO_BEACON"));
                 }
-
+/*
             case DRIVE_TO_RAMP:
 
                 if ((motorRightFront.getCurrentPosition() <= -5000) || (motorLeftFront.getCurrentPosition() <=-5000)) {
@@ -349,15 +350,22 @@ public class oldStateMachine extends HardwareClass {
                     telemetry.addData("0", String.format("State: DRIVE_TO_RAMP" +
                             ""));
                 }
+*/
 
+           case TURN_TO_BEACON:
 
-//            case TURN_TO_BEACON:
-
-//                if (robotLocationTransform != null) {
+               if (robotLocationTransform != null) {
                     //STOP
-//                }
+                   motorRightFront.setPower(0.0);
+                   motorLeftFront.setPower(0.0);
+                   motorRightRear.setPower(0.0);
+                   motorLeftRear.setPower(0.0);
+                   changeState(State.STOP);
 
-
+               }
+               else {
+                   telemetry.addData("0", String.format("State: TURN_TO_BEACON"));
+               }
 
 
 

@@ -31,7 +31,7 @@ import java.util.List;
  * Created by ga on 3/7/16.
  */
 
- enum State {INITIALIZE,
+ enum aState {INITIALIZE,
             MOVE_TO_BEACON,
             TURN_TO_BEACON,
             GET_TO_BEACON,
@@ -54,7 +54,7 @@ public class StateMachine extends HardwareClass {
 
     // declare common global variables
 
-     State state;    // declares variable state of type State
+     aState state;    // declares variable state of type State
 
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
 
@@ -85,7 +85,7 @@ public class StateMachine extends HardwareClass {
          motorRightRear.setDirection(DcMotor.Direction.REVERSE);
 
         // assigns state variable to enum INITIALIZE
-        state = State.INITIALIZE;
+        state = aState.INITIALIZE;
 
         // reset encoder target position to 0
   //      motorRightFront.setTargetPosition(0);
@@ -208,7 +208,7 @@ public class StateMachine extends HardwareClass {
 */
      }
 
-    private void changeState(State newState)
+    private void changeState(aState newState)
     {
         // Reset the state time, and then change to next state.
         mStateTime.reset();
@@ -270,7 +270,7 @@ public class StateMachine extends HardwareClass {
                      motorLeftFront.setPower(-1);
                      motorRightRear.setPower(-1);
                      motorLeftRear.setPower(-1);
-                     changeState(State.MOVE_TO_BEACON);
+                     changeState(aState.MOVE_TO_BEACON);
                  }
                  else {
                      // continue printing telemetry data to the phone (in main loop)

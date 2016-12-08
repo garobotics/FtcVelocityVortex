@@ -65,11 +65,13 @@ public class TankBot extends HardwareClass {
 
         motorLeftFront = hardwareMap.dcMotor.get("lf");
         motorLeftRear = hardwareMap.dcMotor.get("lb");
-
+        try{
         ballFlipper = hardwareMap.dcMotor.get("flip");
         sweeper = hardwareMap.dcMotor.get("sweep");
 
         buttonPusher = hardwareMap.servo.get("button") ;
+
+
 
         //set directions of motors when driving
         motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
@@ -77,8 +79,10 @@ public class TankBot extends HardwareClass {
         motorRightFront.setDirection(DcMotor.Direction.REVERSE);
         motorRightRear.setDirection(DcMotor.Direction.REVERSE);
 
-        ballFlipper.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        ballFlipper.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);}
+        catch (IllegalArgumentException i){}
+        catch (NullPointerException n){}
         // buttonPusher add something here maybe
     }
 
