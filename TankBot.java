@@ -69,7 +69,7 @@ public class TankBot extends HardwareClass {
         ballFlipper = hardwareMap.dcMotor.get("flip");
         sweeper = hardwareMap.dcMotor.get("sweep");
 
-        buttonPusher = hardwareMap.servo.get("button") ;
+        buttonPusher = hardwareMap.servo.get("button");
 
 
 
@@ -86,8 +86,8 @@ public class TankBot extends HardwareClass {
         // buttonPusher add something here maybe
     }
 
-long timer = 0;
-
+  //  long timer = 0;
+    boolean loaded = false;
 	@Override
 	public void loop() {
 
@@ -108,6 +108,7 @@ long timer = 0;
         boolean collectorUp = gamepad2.dpad_up;
         boolean collectorDown = gamepad2.dpad_down;
 
+
         // negate all values since the y axis is reversed on the joypads and -1 should be 1
         yVal = -(yVal);
 
@@ -123,15 +124,40 @@ long timer = 0;
         spinner = (float) scaleInput(spinner);
 
         // if the a button is pressed
+
+    try {
+
+
         if (flip) {
-            // have the motor run for 1 rotation
-            ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            ballFlipper.setTargetPosition(560);
-            ballFlipper.setPower(1.0);
+            //if the spring is wound
+            if (loaded) { //shoot it
+                ballFlipper.setTargetPosition(2200);
+                ballFlipper.setPower(1.0);
+            } else { //load it
+                ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                ballFlipper.setTargetPosition(1540);
+                ballFlipper.setPower(1.0);
+            }
         }
 
-        telemetry.addData("counter", timer);
+        // if motor is at or goes past the target position
+        if (loaded) {
+            if (ballFlipper.getCurrentPosition() >= 2200) {
+                // stop the motor
+                ballFlipper.setPower(0.0);
+                loaded = false;
+            }
+        } else {
+            if (ballFlipper.getCurrentPosition() >= 1540) {
+                // stop the motor
+                ballFlipper.setPower(0.0);
+                loaded = true;
+            }
+        }
+
+
+        //   telemetry.addData("counter", timer);
       /*  if (button && timer>75) { // if button is pushed
             if (buttonPusher.getPosition() >= 0.25) { // if servo position is greater than 0
                 // bring the button pusher back in
@@ -161,11 +187,8 @@ long timer = 0;
         }
 
 
-        // if motor is at or goes past the target position
-        if (ballFlipper.getCurrentPosition() >= 560) {
-            // stop the motor
-            ballFlipper.setPower(0.0);
-        }
+    }
+    catch (NullPointerException eagleSeven){}
 
 
 

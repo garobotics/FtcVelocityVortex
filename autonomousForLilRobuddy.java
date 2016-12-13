@@ -30,7 +30,7 @@ import java.util.List;
  * Created by ga on 3/7/16.
  */
 
-enum State {INITIALIZE,
+enum Statelb {INITIALIZE,
     LAUNCH_BALL,
     MOVE_TO_BEACON,
     TURN_TO_BEACON,
@@ -45,12 +45,12 @@ enum State {INITIALIZE,
 }
 // possible values for state because it is an enum type
 
-@Autonomous(name="working State Machine RED")
+@Autonomous(name="Lil Robuddy")
 
 
-public class oldStateMachine extends HardwareClass {
+public class autonomousForLilRobuddy extends HardwareClass {
 
-    State state;    // declares variable state of type State
+    Statelb state;    // declares variable state of type State
 
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
 
@@ -74,19 +74,19 @@ public class oldStateMachine extends HardwareClass {
         motorLeftFront = hardwareMap.dcMotor.get("lf");
         motorLeftRear = hardwareMap.dcMotor.get("lb");
         try{
-        ballFlipper = hardwareMap.dcMotor.get("flip");
+            ballFlipper = hardwareMap.dcMotor.get("flip");
 
-        motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
-        motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
-        motorRightFront.setDirection(DcMotor.Direction.REVERSE);
-        motorRightRear.setDirection(DcMotor.Direction.REVERSE);
+            motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
+            motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
+            motorRightFront.setDirection(DcMotor.Direction.REVERSE);
+            motorRightRear.setDirection(DcMotor.Direction.REVERSE);
 
-        // assigns state variable to enum INITIALIZE
-        state = State.INITIALIZE;
+            // assigns state variable to enum INITIALIZE
+            state = Statelb.INITIALIZE;
 
-        // reset encoder target positions to 0 on drive wheels and ball flipper
-        resetDriveEncoders();
-        ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
+            // reset encoder target positions to 0 on drive wheels and ball flipper
+            resetDriveEncoders();
+            ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);}
         catch (IllegalArgumentException i){}
         catch (NullPointerException n){}
 
@@ -133,9 +133,9 @@ public class oldStateMachine extends HardwareClass {
 
         // red target 1
         OpenGLMatrix redTarget1LocationOnField = OpenGLMatrix
-        // Then we translate the target off to the RED WALL. Our translation here
-        //is a negative translation in X.
-        .translation((float) -1803.4, (float) 901.7, 150)
+                // Then we translate the target off to the RED WALL. Our translation here
+                //is a negative translation in X.
+                .translation((float) -1803.4, (float) 901.7, 150)
                 .multiplied(Orientation.getRotationMatrix(
                         // First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z
                         AxesReference.EXTRINSIC, AxesOrder.XZX,
@@ -146,9 +146,9 @@ public class oldStateMachine extends HardwareClass {
 
         // red target 2
         OpenGLMatrix redTarget2LocationOnField = OpenGLMatrix
-        // Then we translate the target off to the RED WALL. Our translation here
-        //is a negative translation in X.
-        .translation((float) -1803.4, (float) -300.567, 150)
+                // Then we translate the target off to the RED WALL. Our translation here
+                //is a negative translation in X.
+                .translation((float) -1803.4, (float) -300.567, 150)
                 .multiplied(Orientation.getRotationMatrix(
                         // First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z
                         AxesReference.EXTRINSIC, AxesOrder.XZX,
@@ -158,9 +158,9 @@ public class oldStateMachine extends HardwareClass {
 
         // blue target 1
         OpenGLMatrix blueTarget1LocationOnField = OpenGLMatrix
-        // Then we translate the target off to the RED WALL. Our translation here
-        //is a negative translation in X.
-        .translation((float) -901.7, (float) 1803.4, 150)
+                // Then we translate the target off to the RED WALL. Our translation here
+                //is a negative translation in X.
+                .translation((float) -901.7, (float) 1803.4, 150)
                 .multiplied(Orientation.getRotationMatrix(
                         // First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z
                         AxesReference.EXTRINSIC, AxesOrder.XZX,
@@ -170,9 +170,9 @@ public class oldStateMachine extends HardwareClass {
 
         // blue target 2
         OpenGLMatrix blueTarget2LocationOnField = OpenGLMatrix
-        // Then we translate the target off to the RED WALL. Our translation here
-        //is a negative translation in X.
-        .translation((float) 300.567, (float) 1803.4, 150)
+                // Then we translate the target off to the RED WALL. Our translation here
+                //is a negative translation in X.
+                .translation((float) 300.567, (float) 1803.4, 150)
                 .multiplied(Orientation.getRotationMatrix(
                         // First, in the fixed (field) coordinate system, we rotate 90deg in X, then 90 in Z
                         AxesReference.EXTRINSIC, AxesOrder.XZX,
@@ -197,14 +197,14 @@ public class oldStateMachine extends HardwareClass {
 
 
         //Wait for the game to begin
-    //    telemetry.addData(">", "Press Play to start tracking");
+        //    telemetry.addData(">", "Press Play to start tracking");
 
         //Start tracking the data sets we care about.
         ftcPics.activate();
 
     }
 
-    private void changeState(State newState)
+    private void changeState(Statelb newState)
     {
         // Reset the state time, and then change to next state.
         mStateTime.reset();
@@ -222,7 +222,7 @@ public class oldStateMachine extends HardwareClass {
 
         for (VuforiaTrackable trackable : allTrackables) {
 
-    //        telemetry.addData(trackable.getName(), ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() ? "Visible" : "Not Visible");    //
+            //        telemetry.addData(trackable.getName(), ((VuforiaTrackableDefaultListener)trackable.getListener()).isVisible() ? "Visible" : "Not Visible");    //
 
             robotLocationTransform = ((VuforiaTrackableDefaultListener)trackable.getListener()).getUpdatedRobotLocation();
             if (robotLocationTransform != null) {
@@ -239,10 +239,10 @@ public class oldStateMachine extends HardwareClass {
         //Provide feedback as to where the robot was last located (if we know).
 
         if (lastLocation != null) {
- //             RobotLog.vv(TAG, "robot=%s", format(lastLocation));
- //             telemetry.addData("Pos", lastLocation.formatAsTransform());
+            //             RobotLog.vv(TAG, "robot=%s", format(lastLocation));
+            //             telemetry.addData("Pos", lastLocation.formatAsTransform());
         } else {
- //           telemetry.addData("Pos", "Unknown");
+            //           telemetry.addData("Pos", "Unknown");
         }
         telemetry.clearAll();
         telemetry.addData("1", String.format("Left Front: %5d  Right Front: %5d ",
@@ -264,24 +264,8 @@ public class oldStateMachine extends HardwareClass {
                 // motorLeftRear.waitOneFullHardwareCycle();
 
                 // if both encoders are close to 0, start moving and change state to next state
-                if (count >= 1000) {
-
-                    ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    ballFlipper.setTargetPosition(1120);
-                    ballFlipper.setPower(1.0);
-                    changeState(State.LAUNCH_BALL);
-                }
-                else {
-                    // continue printing telemetry data to the phone (in main loop)
-                    count++;
-                    telemetry.addData("0", String.format("State: INITIALIZE"));
-                }
-
-
-            case LAUNCH_BALL:
-                // if ball flipper is done, start moving and change state to next state
-                if (ballFlipper.getCurrentPosition() >= 1120) {
-                    ballFlipper.setPower(0);
+                if (true) {
+            //        ballFlipper.setPower(0);
                     motorLeftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     motorRightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     motorLeftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -297,7 +281,7 @@ public class oldStateMachine extends HardwareClass {
                     motorRightRear.setPower(.5);
                     //motorLeftFront.setPower(.5);
                     //motorLeftRear.setPower(.5);
-                    changeState(State.MOVE_TO_BEACON);
+                    changeState(Statelb.MOVE_TO_BEACON);
                 }
                 else {
                     telemetry.addData("0", String.format("State: LAUNCH_BALL"));
@@ -306,69 +290,48 @@ public class oldStateMachine extends HardwareClass {
             case MOVE_TO_BEACON:
 
                 if ((motorRightFront.getCurrentPosition() <= -1300) || (motorLeftFront.getCurrentPosition() <= -1300)) {
- //                   telemetry.addData("0", "The eagle has flown.");
+                    //                   telemetry.addData("0", "The eagle has flown.");
                     motorRightFront.setPower(0);
                     motorRightRear.setPower(0);
                     motorLeftRear.setPower(0);
                     motorLeftFront.setPower(0);
                     //                  motorRightFront.setPower(-0.25);
-  //                  motorLeftFront.setPower(0.25);
-  //                  motorRightRear.setPower(-0.25);
-  //                  motorLeftRear.setPower(0.25);
-  //                  changeState(State.TURN_TO_BEACON);
+                    //                  motorLeftFront.setPower(0.25);
+                    //                  motorRightRear.setPower(-0.25);
+                    //                  motorLeftRear.setPower(0.25);
+                    //                  changeState(State.TURN_TO_BEACON);
                     motorLeftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     motorRightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     motorLeftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     motorRightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-  //                  motorRightFront.setTargetPosition(1500);
-  //                  motorLeftFront.setTargetPosition(1500);
+                    //                  motorRightFront.setTargetPosition(1500);
+                    //                  motorLeftFront.setTargetPosition(1500);
                     //start turning left
                     motorRightFront.setPower(-0.25);
                     motorLeftFront.setPower(0.25);
                     motorRightRear.setPower(-0.25);
                     motorLeftRear.setPower(0.25);
-                    changeState(State.TURN_TO_BEACON);
+                    changeState(Statelb.TURN_TO_BEACON);
                 }
                 else {
                     telemetry.addData("0", String.format("State: MOVE_TO_BEACON"));
                 }
-/*
-            case DRIVE_TO_RAMP:
 
-                if ((motorRightFront.getCurrentPosition() <= -5000) || (motorLeftFront.getCurrentPosition() <=-5000)) {
-                    telemetry.addData("0", "The eagle has flown.");
 
-                    //                  motorRightFront.setPower(-0.25);
-                    //                  motorLeftFront.setPower(0.25);
-                    //                  motorRightRear.setPower(-0.25);
-                    //                  motorLeftRear.setPower(0.25);
-                    //                  changeState(State.TURN_TO_BEACON);
+            case TURN_TO_BEACON:
+
+                if (robotLocationTransform != null) {
+                    //STOP
                     motorRightFront.setPower(0.0);
                     motorLeftFront.setPower(0.0);
                     motorRightRear.setPower(0.0);
                     motorLeftRear.setPower(0.0);
-                    changeState(State.STOP);
+                    changeState(Statelb.STOP);
+
                 }
-                else{
-                    telemetry.addData("0", String.format("State: DRIVE_TO_RAMP" +
-                            ""));
+                else {
+                    telemetry.addData("0", String.format("State: TURN_TO_BEACON"));
                 }
-*/
-
-           case TURN_TO_BEACON:
-
-               if (robotLocationTransform != null) {
-                    //STOP
-                   motorRightFront.setPower(0.0);
-                   motorLeftFront.setPower(0.0);
-                   motorRightRear.setPower(0.0);
-                   motorLeftRear.setPower(0.0);
-                   changeState(State.STOP);
-
-               }
-               else {
-                   telemetry.addData("0", String.format("State: TURN_TO_BEACON"));
-               }
 
 
 
