@@ -230,7 +230,7 @@ public class TankBot extends HardwareClass {
             motorRightFront.setPower(xVal * weightAdjustRF); // 0 < xVal < 1
             motorRightRear.setPower(-xVal * weightAdjustRR);  // -1 < -xVal < 0
             motorLeftFront.setPower(-xVal * weightAdjustLF);
-            motorLeftRear.setPower(xVal * weightAdjustLR);
+            motorLeftRear.setPower(7xVal * weightAdjustLR);
         }
 
         /* LEFT: the right rear and left front wheels must go forward
