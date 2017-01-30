@@ -4,6 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -71,6 +75,20 @@ public class oldStateMachine extends HardwareClass {
     // white value is around .08
 
     public boolean theJudgment; //true means correcting from too white, false means correcting from too gray
+
+    // range sensor info
+
+    byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
+
+    I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); //Default I2C address for MR Range (7-bit)
+    public static final int RANGE1_REG_START = 0x04; //Register to start reading
+    public static final int RANGE1_READ_LENGTH = 2; //Number of byte to read
+
+    public I2cDevice RANGE1;
+    public I2cDeviceSynch RANGE1Reader;
+
+
+
     @Override
     public void init() {
 
@@ -211,6 +229,11 @@ public class oldStateMachine extends HardwareClass {
         //Start tracking the data sets we care about.
         ftcPics.activate();
 
+        // range sensor info
+        RANGE1 = hardwareMap.i2cDevice.get("range");
+        RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
+        RANGE1Reader.engage();
+
     }
 
     private void changeState(State newState)
@@ -245,6 +268,8 @@ public class oldStateMachine extends HardwareClass {
             }
         }
 
+
+
         //Provide feedback as to where the robot was last located (if we know).
 
         if (lastLocation != null) {
@@ -265,6 +290,12 @@ public class oldStateMachine extends HardwareClass {
         sensorInput = lineSensor.getLightDetected();
         correction = perfectColorValue - sensorInput;
 
+
+        // range info stuff
+        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
+
+        telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
+        telemetry.addData("ODS", range1Cache[1] & 0xFF);
 
         switch(state) {
             case INITIALIZE:
@@ -426,12 +457,13 @@ public class oldStateMachine extends HardwareClass {
                    telemetry.addData("0", String.format("State: DRIVE_TO_LINE"));
                    telemetry.addData("sensor", sensorInput);
 
-                //if range sensor says we are close
-            /*      motorRightFront.setPower(0);
+                if () {
+                  motorRightFront.setPower(0);
                     motorLeftFront.setPower(0);
                     motorLeftRear.setPower(0);
                     motorRightRear.setPower(0);
                     changeState(State.STOP);
+                }
 **/
 
 
