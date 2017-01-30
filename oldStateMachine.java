@@ -31,10 +31,10 @@ import java.util.List;
  */
 
 enum State {INITIALIZE,
-    LAUNCH_BALL,
+    LAUNCH_BALLS,
     MOVE_TO_BEACON,
     TURN_TO_BEACON,
-    DRIVE_TO_RAMP,
+    DRIVE_TO_LINE,
     LINE_FOLLOW,
     SQUARE_UP,
     DETECT_COLOR,
@@ -54,6 +54,9 @@ public class oldStateMachine extends HardwareClass {
 
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
 
+    public double perfectColorValue = .05;
+    public double sensorInput;
+    public double correction;
 
     public static final String TAG = "Vuforia Sample";
 
@@ -62,23 +65,29 @@ public class oldStateMachine extends HardwareClass {
     public double robotX;
     public double robotY;
     public double robotBearing;
-
+    public double speed;
     public List<VuforiaTrackable> allTrackables;
+    private double GRAY_VALUE = 0.02; // gray values never go above .02, so this is the threshold
+    // white value is around .08
 
+    public boolean theJudgment; //true means correcting from too white, false means correcting from too gray
     @Override
     public void init() {
 
+        lineSensor = hardwareMap.opticalDistanceSensor.get("lsense");
         motorRightFront = hardwareMap.dcMotor.get("rf");
         motorRightRear = hardwareMap.dcMotor.get("rb");
 
         motorLeftFront = hardwareMap.dcMotor.get("lf");
         motorLeftRear = hardwareMap.dcMotor.get("lb");
+
         try{
         ballFlipper = hardwareMap.dcMotor.get("flip");
 
+        //set directions of motors when driving
         motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
-        motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
-        motorRightFront.setDirection(DcMotor.Direction.REVERSE);
+        motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
+        motorRightFront.setDirection(DcMotor.Direction.FORWARD);
         motorRightRear.setDirection(DcMotor.Direction.REVERSE);
 
         // assigns state variable to enum INITIALIZE
@@ -104,7 +113,7 @@ public class oldStateMachine extends HardwareClass {
 
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(com.qualcomm.ftcrobotcontroller.R.id.cameraMonitorViewId);
         parameters.vuforiaLicenseKey = "AY7wJZH/////AAAAGZMdB1/VKEVukhg26LQV42lceWeAr1LKIKyASsN63SUKG2y0cw4j0jxeOOY3MqgM0teJz8kyQGCaPpFEu0kXsblybBfCo+Ta0PZapJYWFCzk+NdiJIK7iy29OqFh7/vFMrdcl6i1iVX4We5Xvjr2XpYoJFd2m2RrUFrU6+vmv3RYYmLJynLI3IGP1jpHU6XZVPukzimvB1ABs6AelwYwUHzlXX/tloA4PuTLhhwUYRIzX948sQUr6Vr26fnZWPHLY/rJ0HyyTPaIUVro+giCdp8rVQoYBKbu+f7UTuN7r1H/XvyofXR6OlFLHi0SdQy91sRr3ER8I6iY19OwkhBOqQMzcpu6DK7A7Lik0J/EOnS1\n";
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
         vuforia = ClassFactory.createVuforiaLocalizer(parameters);
 
 
@@ -249,6 +258,12 @@ public class oldStateMachine extends HardwareClass {
                 motorRightFront.getCurrentPosition(),
                 motorLeftFront.getCurrentPosition()));
 
+        sensorInput = lineSensor.getLightDetected();
+        telemetry.addData("sensor", sensorInput);
+        telemetry.addData("correction", correction);
+
+        sensorInput = lineSensor.getLightDetected();
+        correction = perfectColorValue - sensorInput;
 
 
         switch(state) {
@@ -267,9 +282,9 @@ public class oldStateMachine extends HardwareClass {
                 if (count >= 1000) {
 
                     ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    ballFlipper.setTargetPosition(1120);
+                    ballFlipper.setTargetPosition(2240);
                     ballFlipper.setPower(1.0);
-                    changeState(State.LAUNCH_BALL);
+                    changeState(State.LAUNCH_BALLS);
                 }
                 else {
                     // continue printing telemetry data to the phone (in main loop)
@@ -278,25 +293,28 @@ public class oldStateMachine extends HardwareClass {
                 }
 
 
-            case LAUNCH_BALL:
+            case LAUNCH_BALLS:
                 // if ball flipper is done, start moving and change state to next state
-                if (ballFlipper.getCurrentPosition() >= 1120) {
+                if (ballFlipper.getCurrentPosition() >= 2240) {
                     ballFlipper.setPower(0);
                     motorLeftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     motorRightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     motorLeftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     motorRightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    motorRightFront.setTargetPosition(1700);
-                    motorLeftFront.setTargetPosition(1700);
-                    /*//crab right
-                    motorLeftFront.setPower(-.5)
-                    motorLeftRear.setPower(.5);
-                    motorRightFront.setPower(.5);
-                    motorRightRear.setPower(-.5);*/
+                    motorRightFront.setTargetPosition(3400);
+                    motorLeftFront.setTargetPosition(-3400);
+                    //crab right
+                    motorLeftFront.setPower(-1);
+                    motorLeftRear.setPower(1);
+                    motorRightFront.setPower(1);
+                    motorRightRear.setPower(-1);
+                    /*
+                    //move forward
                     motorRightFront.setPower(.5);
                     motorRightRear.setPower(.5);
-                    //motorLeftFront.setPower(.5);
-                    //motorLeftRear.setPower(.5);
+                    motorLeftFront.setPower(.5);
+                    motorLeftRear.setPower(.5);*/
+
                     changeState(State.MOVE_TO_BEACON);
                 }
                 else {
@@ -305,17 +323,24 @@ public class oldStateMachine extends HardwareClass {
 
             case MOVE_TO_BEACON:
 
-                if ((motorRightFront.getCurrentPosition() <= -1300) || (motorLeftFront.getCurrentPosition() <= -1300)) {
- //                   telemetry.addData("0", "The eagle has flown.");
+                if ((motorRightFront.getCurrentPosition() >= 3400) && (motorLeftFront.getCurrentPosition() <= -3400)) {
+                    telemetry.addData("0", "The eagle has flown.");
+
                     motorRightFront.setPower(0);
                     motorRightRear.setPower(0);
                     motorLeftRear.setPower(0);
                     motorLeftFront.setPower(0);
-                    //                  motorRightFront.setPower(-0.25);
+                    //motorRightFront.setPower(-0.25);
   //                  motorLeftFront.setPower(0.25);
   //                  motorRightRear.setPower(-0.25);
   //                  motorLeftRear.setPower(0.25);
   //                  changeState(State.TURN_TO_BEACON);
+
+                    //reset encoders
+                    motorLeftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    motorRightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                    //run all motors without encoders
                     motorLeftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     motorRightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     motorLeftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -323,47 +348,26 @@ public class oldStateMachine extends HardwareClass {
   //                  motorRightFront.setTargetPosition(1500);
   //                  motorLeftFront.setTargetPosition(1500);
                     //start turning left
-                    motorRightFront.setPower(-0.25);
-                    motorLeftFront.setPower(0.25);
-                    motorRightRear.setPower(-0.25);
-                    motorLeftRear.setPower(0.25);
+                    motorRightFront.setPower(-0.15);
+                    motorLeftFront.setPower(0.15);
+                    motorRightRear.setPower(-0.15);
+                    motorLeftRear.setPower(0.15);
                     changeState(State.TURN_TO_BEACON);
                 }
                 else {
                     telemetry.addData("0", String.format("State: MOVE_TO_BEACON"));
                 }
-/*
-            case DRIVE_TO_RAMP:
 
-                if ((motorRightFront.getCurrentPosition() <= -5000) || (motorLeftFront.getCurrentPosition() <=-5000)) {
-                    telemetry.addData("0", "The eagle has flown.");
-
-                    //                  motorRightFront.setPower(-0.25);
-                    //                  motorLeftFront.setPower(0.25);
-                    //                  motorRightRear.setPower(-0.25);
-                    //                  motorLeftRear.setPower(0.25);
-                    //                  changeState(State.TURN_TO_BEACON);
-                    motorRightFront.setPower(0.0);
-                    motorLeftFront.setPower(0.0);
-                    motorRightRear.setPower(0.0);
-                    motorLeftRear.setPower(0.0);
-                    changeState(State.STOP);
-                }
-                else{
-                    telemetry.addData("0", String.format("State: DRIVE_TO_RAMP" +
-                            ""));
-                }
-*/
 
            case TURN_TO_BEACON:
 
                if (robotLocationTransform != null) {
                     //STOP
-                   motorRightFront.setPower(0.0);
-                   motorLeftFront.setPower(0.0);
-                   motorRightRear.setPower(0.0);
-                   motorLeftRear.setPower(0.0);
-                   changeState(State.STOP);
+                   motorRightFront.setPower(-.8);
+                   motorLeftFront.setPower(-.8);
+                   motorRightRear.setPower(-.8);
+                   motorLeftRear.setPower(-.8);
+                   changeState(State.DRIVE_TO_LINE);
 
                }
                else {
@@ -371,8 +375,69 @@ public class oldStateMachine extends HardwareClass {
                }
 
 
+            case DRIVE_TO_LINE:
 
-            case STOP:
+                if(sensorInput > GRAY_VALUE){
+                    speed = 0.3;
+                    motorRightFront.setPower(0);
+                    motorLeftFront.setPower(0);
+                    motorRightRear.setPower(0);
+                    motorLeftRear.setPower(0);
+                    changeState(State.LINE_FOLLOW);
+                }
+                else{
+                    telemetry.addData("0", String.format("State: DRIVE_TO_LINE"));
+                    telemetry.addData("0", sensorInput);
+                }
+
+            case LINE_FOLLOW:
+            // follow the right edge of the line (red team)
+
+
+               if (correction > 0) { //if it sees white
+                   //turn right
+                   motorRightFront.setPower(0);
+                   motorLeftFront.setPower(-speed);
+                   motorRightRear.setPower(0);
+                   motorLeftRear.setPower(-speed);
+
+    //               if(!theJudgment){ //if it was too gray before
+    //                   speed = speed * -1; //reverse the speed
+    //               }
+    //               theJudgment = true; //means too white
+
+
+               }
+               else if (correction < 0)  { //if it sees gray
+                   //turn left
+                   motorRightFront.setPower(-speed);
+                   motorLeftFront.setPower(0);
+                   motorRightRear.setPower(-speed);
+                   motorLeftRear.setPower(0);
+    //               if(theJudgment){ //if was too white before
+    //                   speed = speed * -1; //reverse the speed
+    //               }
+    //               theJudgment = false;
+
+               }
+
+
+
+                   telemetry.addData("0", String.format("State: DRIVE_TO_LINE"));
+                   telemetry.addData("sensor", sensorInput);
+
+                //if range sensor says we are close
+            /*      motorRightFront.setPower(0);
+                    motorLeftFront.setPower(0);
+                    motorLeftRear.setPower(0);
+                    motorRightRear.setPower(0);
+                    changeState(State.STOP);
+**/
+
+
+
+
+                   case STOP:
                 telemetry.addData("0", String.format("State: STOP"));
                 break;
         }
@@ -411,5 +476,6 @@ public class oldStateMachine extends HardwareClass {
         if (motorRightRear.getMode() != mode)
             motorRightRear.setMode(mode);
     }
+
 
 }
