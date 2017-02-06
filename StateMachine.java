@@ -78,6 +78,7 @@ public class StateMachine extends HardwareClass {
 
          motorLeftFront = hardwareMap.dcMotor.get("lf");
          motorLeftRear = hardwareMap.dcMotor.get("lb");
+         theBouncer = hardwareMap.servo.get("gate");
 
          motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
          motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
