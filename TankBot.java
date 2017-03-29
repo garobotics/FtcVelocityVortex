@@ -31,13 +31,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cColorSensor;
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.I2cAddr;
+import com.qualcomm.robotcore.hardware.I2cDevice;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
+import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.HardwareClass;
 
 import static java.lang.Thread.sleep;
@@ -56,7 +64,9 @@ public class TankBot extends HardwareClass {
     // increase adjustment values for wheels that are on the heavier part of the robot
     // because we are scaling weightAdjust according to the power
 
+// ModernRoboticsI2cColorSensor colorSensor;
 
+    ///////CHECK EUCT, JENNA GETS A MESSAGE EVERY TIME//////////////
 	@Override
 	public void init() {
 
@@ -65,18 +75,26 @@ public class TankBot extends HardwareClass {
 
         motorLeftFront = hardwareMap.dcMotor.get("lf");
         motorLeftRear = hardwareMap.dcMotor.get("lb");
+
+        ballElevator = hardwareMap.dcMotor.get("elevator");
         try{
         ballFlipper = hardwareMap.dcMotor.get("flip");
         sweeper = hardwareMap.dcMotor.get("sweep");
 
         buttonPusher = hardwareMap.servo.get("button");
+        youliftBro = hardwareMap.servo.get("shelf");
 
+        theBouncer = hardwareMap.servo.get("bouncer");
+        lineSensor = hardwareMap.opticalDistanceSensor.get("lsense");
+        colorSensor = hardwareMap.colorSensor.get("csense");
+       // rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, "rsense");
+        colorSensor.enableLed(false);
 
 
         //set directions of motors when driving
         motorLeftRear.setDirection(DcMotor.Direction.FORWARD);
-        motorLeftFront.setDirection(DcMotor.Direction.FORWARD);
-        motorRightFront.setDirection(DcMotor.Direction.REVERSE);
+        motorLeftFront.setDirection(DcMotor.Direction.REVERSE);
+        motorRightFront.setDirection(DcMotor.Direction.FORWARD);
         motorRightRear.setDirection(DcMotor.Direction.REVERSE);
 
 
@@ -84,6 +102,12 @@ public class TankBot extends HardwareClass {
         catch (IllegalArgumentException i){}
         catch (NullPointerException n){}
         // buttonPusher add something here maybe
+
+      /*  I2cDeviceSynch colorCreader = new I2cDeviceSynchImpl(colorSensor, I2cAddr.create8bit(0x3c), false);
+        colorCreader.engage();
+            colorCreader.write8(3, 1);    //Set the mode of the color sensor using LEDState
+        //Passive - For measuring ambient light, eg. the FTC Color Beacon
+      */
     }
 
   //  long timer = 0;
@@ -94,7 +118,10 @@ public class TankBot extends HardwareClass {
         // adds telemetry data --> shows values of motor positions
         telemetry.addData("motorLeftFront", motorLeftFront.getCurrentPosition());
         telemetry.addData("motorRightFront", motorRightFront.getCurrentPosition());
-
+        // telemetry.addData("cm", "%.2f cm", rangeSensor.getDistance(DistanceUnit.CM));
+        telemetry.addData("Red  ", colorSensor.red());
+        telemetry.addData("Green", colorSensor.green());
+        telemetry.addData("Blue ", colorSensor.blue());
 		/*
 		 Gamepad 1 controls the motors via the left joystick
 		 Gamepad 2 controls nothing right now
@@ -104,9 +131,15 @@ public class TankBot extends HardwareClass {
         float xVal = gamepad1.left_stick_x;
         float spinner = gamepad1.right_stick_x; // x axis of the right joystick
         boolean flip = gamepad2.a;
-        //boolean button = gamepad2.b;
         boolean collectorUp = gamepad2.dpad_up;
         boolean collectorDown = gamepad2.dpad_down;
+        boolean fineTunaBallD = gamepad2.right_bumper;
+        boolean fineTunaBallU = gamepad2.left_bumper;
+        boolean inTheClub = gamepad2.x;
+        boolean youWorkOut = gamepad2.y;
+        float ballFlippy = gamepad2.left_stick_y;
+
+        float rollers = gamepad2.right_stick_y;
 
 
         // negate all values since the y axis is reversed on the joypads and -1 should be 1
@@ -122,39 +155,117 @@ public class TankBot extends HardwareClass {
         yVal = (float) scaleInput(yVal);
         xVal = (float) scaleInput(xVal);
         spinner = (float) scaleInput(spinner);
-
+        int timer = 0;
         // if the a button is pressed
+
+
+        ballFlippy = (float) scaleInput(ballFlippy);
+
+        if(ballFlippy == 0){
+            ballFlipper.setPower(0);
+        }
+        if(ballFlippy < 0){
+            ballFlipper.setPower(-1);
+        }
+        if(ballFlippy > 0){
+            ballFlipper.setPower(1);
+        }
+
+
+       /*if(inTheClub){
+           if(theBouncer.getPosition()==0){
+               theBouncer.setPosition(1);
+           }
+           else {
+               theBouncer.setPosition(0);
+           }
+       }*/
+
+        //this code is for the servo bc the one above is spazzy//
+       /* if (inTheClub && timer>75) { // if button is pushed
+            if (theBouncer.getPosition() >= 0.5) { // if servo position is greater than 0
+                // bring the button pusher back in
+                theBouncer.setPosition(0.0);
+                timer = 0;
+            } else { // if servo position is 0
+                // deploy the button pusher
+                buttonPusher.setPosition(1);
+                timer = 0;
+            }
+
+
+        }
+        timer = timer+1;
+
+*/
+
+
+        /*if(fineTunaBallD){
+            ballFlipper.setPower(.25);
+        }
+
+        else if(fineTunaBallU){
+            ballFlipper.setPower(-.25);
+        }
+        else{
+
+            if (flip) {
+                //if the spring is wound
+                if (loaded) { //shoot it
+                    ballFlipper.setTargetPosition(2200);
+                    ballFlipper.setPower(1.0);
+                } else { //load it
+                    ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    ballFlipper.setTargetPosition(1540);
+                    ballFlipper.setPower(1.0);
+                }
+            }
+
+            // if motor is at or goes past the target position
+            if (loaded) {
+                if (ballFlipper.getCurrentPosition() >= 2200) {
+                    // stop the motor
+                    ballFlipper.setPower(0.0);
+                    loaded = false;
+                }
+            } else {
+                if (ballFlipper.getCurrentPosition() >= 1540) {
+                    // stop the motor
+                    ballFlipper.setPower(0.0);
+                    loaded = true;
+                }
+            }
+        }*/
+
+        // reverse the y value because it is backwards on the joystick
+        rollers = -rollers;
+
+        // the joystick up makes the rollers go up
+        // the joystick down makes the rollers go down
+
+        if(youWorkOut){
+            if(youliftBro.getPosition()==0){
+                youliftBro.setPosition(1);
+            }
+            else {
+                youliftBro.setPosition(0);
+            }
+        }
+
+        if(rollers == 0){
+            ballElevator.setPower(0);
+        }
+        else if (rollers > 0) {
+            ballElevator.setPower(1);
+        }
+        else {
+            ballElevator.setPower(-1);
+        }
 
     try {
 
 
-        if (flip) {
-            //if the spring is wound
-            if (loaded) { //shoot it
-                ballFlipper.setTargetPosition(2200);
-                ballFlipper.setPower(1.0);
-            } else { //load it
-                ballFlipper.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                ballFlipper.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                ballFlipper.setTargetPosition(1540);
-                ballFlipper.setPower(1.0);
-            }
-        }
-
-        // if motor is at or goes past the target position
-        if (loaded) {
-            if (ballFlipper.getCurrentPosition() >= 2200) {
-                // stop the motor
-                ballFlipper.setPower(0.0);
-                loaded = false;
-            }
-        } else {
-            if (ballFlipper.getCurrentPosition() >= 1540) {
-                // stop the motor
-                ballFlipper.setPower(0.0);
-                loaded = true;
-            }
-        }
 
 
         //   telemetry.addData("counter", timer);
@@ -230,7 +341,7 @@ public class TankBot extends HardwareClass {
             motorRightFront.setPower(xVal * weightAdjustRF); // 0 < xVal < 1
             motorRightRear.setPower(-xVal * weightAdjustRR);  // -1 < -xVal < 0
             motorLeftFront.setPower(-xVal * weightAdjustLF);
-            motorLeftRear.setPower(7xVal * weightAdjustLR);
+            motorLeftRear.setPower(xVal * weightAdjustLR);
         }
 
         /* LEFT: the right rear and left front wheels must go forward

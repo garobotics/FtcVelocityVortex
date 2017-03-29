@@ -1,13 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.I2cAddr;
-import com.qualcomm.robotcore.hardware.I2cDevice;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynchImpl;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -50,7 +47,7 @@ enum State {INITIALIZE,
 // possible values for state because it is an enum type
 
 @Autonomous(name="working State Machine RED")
-
+@Disabled
 
 public class oldStateMachine extends HardwareClass {
 
@@ -58,9 +55,7 @@ public class oldStateMachine extends HardwareClass {
 
     private ElapsedTime mStateTime = new ElapsedTime();  // Time into current state
 
-    public double perfectColorValue = .05;
-    public double sensorInput;
-    public double correction;
+
 
     public static final String TAG = "Vuforia Sample";
 
@@ -71,24 +66,14 @@ public class oldStateMachine extends HardwareClass {
     public double robotBearing;
     public double speed;
     public List<VuforiaTrackable> allTrackables;
+
+    public double perfectColorValue = .05;
+    public double sensorInput;
+    public double correction;
     private double GRAY_VALUE = 0.02; // gray values never go above .02, so this is the threshold
     // white value is around .08
 
     public boolean theJudgment; //true means correcting from too white, false means correcting from too gray
-
-    // range sensor info
-
-    byte[] range1Cache; //The read will return an array of bytes. They are stored in this variable
-
-    I2cAddr RANGE1ADDRESS = new I2cAddr(0x14); //Default I2C address for MR Range (7-bit)
-    public static final int RANGE1_REG_START = 0x04; //Register to start reading
-    public static final int RANGE1_READ_LENGTH = 2; //Number of byte to read
-
-    public I2cDevice RANGE1;
-    public I2cDeviceSynch RANGE1Reader;
-
-
-
     @Override
     public void init() {
 
@@ -229,11 +214,6 @@ public class oldStateMachine extends HardwareClass {
         //Start tracking the data sets we care about.
         ftcPics.activate();
 
-        // range sensor info
-        RANGE1 = hardwareMap.i2cDevice.get("range");
-        RANGE1Reader = new I2cDeviceSynchImpl(RANGE1, RANGE1ADDRESS, false);
-        RANGE1Reader.engage();
-
     }
 
     private void changeState(State newState)
@@ -268,8 +248,6 @@ public class oldStateMachine extends HardwareClass {
             }
         }
 
-
-
         //Provide feedback as to where the robot was last located (if we know).
 
         if (lastLocation != null) {
@@ -290,12 +268,6 @@ public class oldStateMachine extends HardwareClass {
         sensorInput = lineSensor.getLightDetected();
         correction = perfectColorValue - sensorInput;
 
-
-        // range info stuff
-        range1Cache = RANGE1Reader.read(RANGE1_REG_START, RANGE1_READ_LENGTH);
-
-        telemetry.addData("Ultra Sonic", range1Cache[0] & 0xFF);
-        telemetry.addData("ODS", range1Cache[1] & 0xFF);
 
         switch(state) {
             case INITIALIZE:
@@ -355,13 +327,12 @@ public class oldStateMachine extends HardwareClass {
             case MOVE_TO_BEACON:
 
                 if ((motorRightFront.getCurrentPosition() >= 3400) && (motorLeftFront.getCurrentPosition() <= -3400)) {
-                    telemetry.addData("0", "The eagle has flown.");
-
+ //                   telemetry.addData("0", "The eagle has flown.");
                     motorRightFront.setPower(0);
                     motorRightRear.setPower(0);
                     motorLeftRear.setPower(0);
                     motorLeftFront.setPower(0);
-                    //motorRightFront.setPower(-0.25);
+                    //                  motorRightFront.setPower(-0.25);
   //                  motorLeftFront.setPower(0.25);
   //                  motorRightRear.setPower(-0.25);
   //                  motorLeftRear.setPower(0.25);
@@ -409,8 +380,8 @@ public class oldStateMachine extends HardwareClass {
             case DRIVE_TO_LINE:
 
                 if(sensorInput > GRAY_VALUE){
-                    speed = 0.3;
-                    motorRightFront.setPower(0);
+                    speed = 0.5;
+        /*            motorRightFront.setPower(0);
                     motorLeftFront.setPower(0);
                     motorRightRear.setPower(0);
                     motorLeftRear.setPower(0);
@@ -454,22 +425,17 @@ public class oldStateMachine extends HardwareClass {
 
 
 
+
                    telemetry.addData("0", String.format("State: DRIVE_TO_LINE"));
                    telemetry.addData("sensor", sensorInput);
-
-                if () {
-                  motorRightFront.setPower(0);
+                //if range sensor says we are close
+       */             motorRightFront.setPower(0);
                     motorLeftFront.setPower(0);
                     motorLeftRear.setPower(0);
                     motorRightRear.setPower(0);
-                    changeState(State.STOP);
-                }
-**/
+                    changeState(State.STOP);}
 
-
-
-
-                   case STOP:
+            case STOP:
                 telemetry.addData("0", String.format("State: STOP"));
                 break;
         }
